@@ -5,7 +5,7 @@ import stableSort from '../../utils/stable-sort'
 import KeyCodes from '../../utils/key-codes'
 import warn from '../../utils/warn'
 import { keys, assign } from '../../utils/object'
-import { arrayIncludes, isArray } from '../../utils/array'
+import { isArray } from '../../utils/array'
 import idMixin from '../../mixins/id'
 import listenOnRootMixin from '../../mixins/listen-on-root'
 
@@ -167,7 +167,7 @@ export default {
       rows.push(
         h(
           'tr',
-          { key: 'top-row', class: ['b-table-top-row', this.tbodyTrClass] },
+          { key: 'top-row', class: ['b-table-top-row', typeof this.tbodyTrClass === 'function' ? this.tbodyTrClass(null, 'row-top') : this.tbodyTrClass] },
           [$scoped['top-row']({ columns: fields.length, fields: fields })]
         )
       )
@@ -281,7 +281,7 @@ export default {
             'tr',
             {
               key: `details-${rowIndex}`,
-              class: ['b-table-details', this.tbodyTrClass],
+              class: ['b-table-details', typeof this.tbodyTrClass === 'function' ? this.tbodyTrClass(item, 'row-details') : this.tbodyTrClass],
               attrs: trAttrs
             },
             [details]
@@ -317,7 +317,7 @@ export default {
           'tr',
           {
             key: 'empty-row',
-            class: ['b-table-empty-row', this.tbodyTrClass],
+            class: ['b-table-empty-row', typeof this.tbodyTrClass === 'function' ? this.tbodyTrClass(null, 'row-empty') : this.tbodyTrClass],
             attrs: this.isStacked ? { role: 'row' } : {}
           },
           [empty]
@@ -333,7 +333,7 @@ export default {
       rows.push(
         h(
           'tr',
-          { key: 'bottom-row', class: ['b-table-bottom-row', this.tbodyTrClass] },
+          { key: 'bottom-row', class: ['b-table-bottom-row', typeof this.tbodyTrClass === 'function' ? this.tbodyTrClass(null, 'row-bottom') : this.tbodyTrClass] },
           [$scoped['bottom-row']({ columns: fields.length, fields: fields })]
         )
       )
@@ -358,8 +358,10 @@ export default {
           role: this.isStacked ? 'table' : null,
           'aria-busy': this.computedBusy ? 'true' : 'false',
           'aria-colcount': String(fields.length),
-          'aria-rowcount': this.$attrs['aria-rowcount'] ||
-            this.items.length > this.perPage ? this.items.length : null
+          'aria-rowcount':
+            this.$attrs['aria-rowcount'] || (this.perPage && this.perPage > 0)
+              ? '-1'
+              : null
         }
       },
       [caption, colgroup, thead, tfoot, tbody]
@@ -398,11 +400,6 @@ export default {
     sortDesc: {
       type: Boolean,
       default: false
-    },
-    sortDirection: {
-      type: String,
-      default: 'asc',
-      validator: direction => arrayIncludes(['asc', 'desc', 'last'], direction)
     },
     caption: {
       type: String,
@@ -487,7 +484,7 @@ export default {
       default: null
     },
     tbodyTrClass: {
-      type: [String, Array],
+      type: [String, Array, Function],
       default: null
     },
     tfootClass: {
@@ -895,7 +892,7 @@ export default {
         item._rowVariant
           ? `${this.dark ? 'bg' : 'table'}-${item._rowVariant}`
           : '',
-        this.tbodyTrClass
+        typeof this.tbodyTrClass === 'function' ? this.tbodyTrClass(item, 'row') : this.tbodyTrClass
       ]
     },
     rowClicked (e, item, index) {
@@ -925,14 +922,6 @@ export default {
         return
       }
       let sortChanged = false
-      const toggleLocalSortDesc = () => {
-        const sortDirection = field.sortDirection || this.sortDirection
-        if (sortDirection === 'asc') {
-          this.localSortDesc = false
-        } else if (sortDirection === 'desc') {
-          this.localSortDesc = true
-        }
-      }
       if (field.sortable) {
         if (field.key === this.localSortBy) {
           // Change sorting direction on current column
@@ -940,12 +929,12 @@ export default {
         } else {
           // Start sorting this column ascending
           this.localSortBy = field.key
-          toggleLocalSortDesc()
+          this.localSortDesc = false
         }
         sortChanged = true
       } else if (this.localSortBy && !this.noSortReset) {
         this.localSortBy = null
-        toggleLocalSortDesc()
+        this.localSortDesc = false
         sortChanged = true
       }
       this.$emit('head-clicked', field.key, field, e)
