@@ -212,7 +212,7 @@ export default {
 Also, fields can be a an object providing similar control over the fields as the
 _array of objects_ above does. Only columns listed in the fields object will be shown.
 The order of the fields will typically be in the order they were defined in the object,
-although **order is not guaranteed**.  
+although **order is not guaranteed**.
 
 **Example: Using object fields definition**
 ```html
@@ -261,7 +261,7 @@ export default {
 <!-- table-fields-object.vue -->
 ```
 
->**Notes:** 
+>**Notes:**
 >- _if a `key` property is defined in the field definition, it will take precedence over the key used to define the field._
 >- _It is possible to define `key` as column's object property, but currently, sorting of these columns **not supported**_
 
@@ -275,7 +275,6 @@ The following field properties are recognized:
 | `class` | String or Array | Class name (or array of class names) to add to `<th>` **and** `<td>` in the column.
 | `formatter` | String or Function | A formatter callback function, can be used instead of (or in conjunction with) slots for real table fields (i.e. fields, that have corresponding data at items array). Refer to [**Custom Data Rendering**](#custom-data-rendering) for more details.
 | `sortable` | Boolean | Enable sorting on this column. Refer to the [**Sorting**](#sorting) Section for more details.
-| `sortDirection` | String | Change sort direction on this column. Refer to the [**Change sort direction**](#change-sort-direction) Section for more details.
 | `tdClass` | String or Array or Function | Class name (or array of class names) to add to `<tbody>` data `<td>` cells in the column. If custom classes per cell are required, a callback function can be specified instead.
 | `thClass` | String or Array | Class name (or array of class names) to add to `<thead>`/`<tfoot>` heading `<th>` cell.
 | `thStyle` | Object | JavaScript object representing CSS styles you would like to apply to the table `<thead>`/`<tfoot>` field `<th>`.
@@ -307,6 +306,8 @@ fields: [
 ```
 
 ## Table style options
+
+### Table Styling ###
 `<b-table>` provides several props to alter the style of the table:
 
 | prop | Type | Description
@@ -376,7 +377,49 @@ export default {
 
 <!-- table-bordered.vue -->
 ```
+### Row Styling ###
 
+You can also style every row using the `tbdoy-tr-class` prop
+
+| Property | Type | Description
+| ---------| ---- | -----------
+| `tbodyTrClass` | String, Array or Function | Classes to be applied to every row on the table. If a function is given, it will be called as `tbodyTrClass( item, type )` and it may return an `Array`, `Object` or `String`.
+
+
+**Example: Basic row styles**
+```html
+<template>
+  <div>
+    <b-table :items="items" :fields="fields" :tbody-tr-class="rowClass">
+    </b-table>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      fields: [ 'first_name', 'last_name', 'age' ],
+      items: [
+        { age: 40, first_name: 'Dickerson', last_name: 'Macdonald', status: 'awesome'  },
+        { age: 21, first_name: 'Larsen', last_name: 'Shaw' },
+        { age: 89, first_name: 'Geneva', last_name: 'Wilson' }
+      ],
+    }
+  },
+  methods: {
+    rowClass( item, type ) {
+      if ( !item )
+        return;
+      if ( item.status === 'awesome' )
+        return 'table-success';
+    },
+  }
+}
+</script>
+
+<!-- table-styled-row-basic.vue -->
+```
 
 ## Responsive tables
 Responsive tables allow tables to be scrolled horizontally with ease. Make any table
@@ -642,7 +685,7 @@ number will align with the indexes from the optional `v-model` bound variable._
 >- _When placing inputs, buttons, selects or links within a data cell scoped slot,
 be sure to add a `@click.stop` (or `@click.native.stop` if needed) handler (which can
 be empty) to prevent the click on the input, button, select, or link, from triggering
-the `row-clicked` event:_ 
+the `row-clicked` event:_
 
 ```html
 <template slot="actions" slot-scope="cell">
@@ -652,13 +695,13 @@ the `row-clicked` event:_
 ```
 
 #### Displaying raw HTML
-By default `b-table` escapes HTML tags in items, if you need to display raw HTML code in `b-table`, you should use 
+By default `b-table` escapes HTML tags in items, if you need to display raw HTML code in `b-table`, you should use
 `v-html` prop in scoped field slot
 
 ```html
 <template>
   <b-table :items="items">
-       <span slot="html" slot-scope="data" v-html="data.value">     
+       <span slot="html" slot-scope="data" v-html="data.value">
       </span>
     </b-table>
 </template>
@@ -672,7 +715,7 @@ export default {
           text: 'This is <i>escaped</i> content',
           html: 'This is <i>raw <strong>HTML</strong></i> <span style="color:red">content</span>'
         }
-      ]    
+      ]
     }
   }
 }
@@ -887,7 +930,7 @@ export default {
 As mentioned in the [**Fields**](#fields-column-definitions-) section above,
 you can make columns sortable. Clicking on a sortable column header will sort the
 column in ascending direction (smallest first), while clicking on it again will switch the direction
-of sorting. Clicking on a non-sortable column will clear the sorting. The prop `no-sort-reset` 
+of sorting. Clicking on a non-sortable column will clear the sorting. The prop `no-sort-reset`
 can be used to disable this feature.
 
 You can control which column is pre-sorted and the order of sorting (ascending or
@@ -993,18 +1036,6 @@ Also, When a sortable column header (or footer) is clicked, the event `sort-chan
 will be emitted with a single argument containing the context object of `<b-table>`.
 See the [Detection of sorting change](#detection-of-sorting-change) section below
 for details about the sort-changed event and the context object.
-
-### Change sort direction
-Control the order in which ascending and descending sorting is applied when a sortable column 
-header is clicked, by using the the `sort-direction` prop. The default value `'asc'` applies
-ascending sort first. To reverse the behavior and sort in descending direction first, set 
-it to `'desc'`.
-
-If you don't want the sorting direction to change at all when clicking another sortable 
-column header, set `sort-direction` to `'last'`. 
-
-For individual column sort directions, specify the property `sortDirection` in `fields`.
-See the [Complete Example](#complete-example) below for an example of using this feature.
 
 
 ## Filtering
@@ -1280,15 +1311,7 @@ when fetching your data!
         </b-form-group>
       </b-col>
       <b-col md="6" class="my-1">
-        <b-form-group horizontal label="Sort direction" class="mb-0">
-          <b-input-group>
-            <b-form-select v-model="sortDirection" slot="append">
-              <option value="asc">Asc</option>
-              <option value="desc">Desc</option>
-              <option value="last">Last</option>
-            </b-form-select>
-          </b-input-group>
-        </b-form-group>
+        <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" class="my-0" />
       </b-col>
       <b-col md="6" class="my-1">
         <b-form-group horizontal label="Per page" class="mb-0">
@@ -1307,7 +1330,6 @@ when fetching your data!
              :filter="filter"
              :sort-by.sync="sortBy"
              :sort-desc.sync="sortDesc"
-             :sort-direction="sortDirection"
              @filtered="onFiltered"
     >
       <template slot="name" slot-scope="row">{{row.value.first}} {{row.value.last}}</template>
@@ -1329,12 +1351,6 @@ when fetching your data!
         </b-card>
       </template>
     </b-table>
-    
-    <b-row>
-      <b-col md="6" class="my-1">
-        <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" class="my-0" />
-      </b-col>
-    </b-row>
 
     <!-- Info modal -->
     <b-modal id="modalInfo" @hide="resetModal" :title="modalInfo.title" ok-only>
@@ -1375,7 +1391,7 @@ export default {
     return {
       items: items,
       fields: [
-        { key: 'name', label: 'Person Full name', sortable: true, sortDirection: 'desc' },
+        { key: 'name', label: 'Person Full name', sortable: true },
         { key: 'age', label: 'Person age', sortable: true, 'class': 'text-center' },
         { key: 'isActive', label: 'is Active' },
         { key: 'actions', label: 'Actions' }
@@ -1386,7 +1402,6 @@ export default {
       pageOptions: [ 5, 10, 15 ],
       sortBy: null,
       sortDesc: false,
-      sortDirection: 'asc',
       filter: null,
       modalInfo: { title: '', content: '' }
     }
